@@ -1,0 +1,21 @@
+Cài Python (tích “Add Python to PATH”), cài VS Code
+
+Mở thư mục dự án trong VS Code → tạo venv:
+
+py -m venv .venv (Win) → kích hoạt: .venv\Scripts\activate
+
+(macOS/Linux) python3 -m venv .venv → source .venv/bin/activate
+
+Chọn interpreter .venv (Ctrl+Shift+P → “Python: Select Interpreter”).
+
+Cài thư viện: pip install numpy matplotlib opencv-python scikit-image
+
+Ảnh:
+
+Cách nhanh: đặt ảnh ngay trong thư mục dự án, đổi dòng: IMAGE_PATH = Path("anhdentrang.jpg")
+
+Tạo file fft_filters.py, dán nguyên code, lưu lại.
+
+Chạy:
+
+Nhấn ▶ “Run Python File” trong VS Code
