@@ -1,275 +1,288 @@
-# STM32 Temperature and Humidity Monitoring System using DHT11
+# Digital Image Signal Processing and FFT-Based Filtering
 
-This project implements a temperature and humidity monitoring system using an **STM32F103C8** microcontroller, a **DHT11** digital temperature-humidity sensor, and an **LCD 16x02** display.  
-The system reads environmental temperature and relative humidity, processes the sensor data, and displays the measured values in real time.
+This project demonstrates fundamental concepts of **Digital Signal Processing (DSP)** and their application to **digital image processing**.
+The project focuses on the relationship between **1D signal processing** and **2D image processing**, using techniques such as **DFT**, **FFT**, **low-pass filtering**, **high-pass filtering**, and objective image quality evaluation.
 
-The project was developed as a course project for **Embedded System Design**, focusing on sensor interfacing, timing control, embedded C programming, simulation, and basic hardware implementation.
+The system was implemented using **Python**, **OpenCV**, and **NumPy** to process images, apply spatial-domain and frequency-domain filtering, and evaluate the results using **PSNR** and **SSIM** metrics.
 
 ---
 
 ## 1. Project Overview
 
-The main objective of this project is to design a low-cost and reliable embedded monitoring module that can measure:
+Digital Signal Processing plays an important role in analyzing, transforming, filtering, and reconstructing signals.
+In this project, the main objective is to apply DSP concepts to image data, where an image is treated as a two-dimensional discrete signal.
 
-- Ambient temperature
-- Relative humidity
-- Sensor response status
-- Measurement stability over time
+The project demonstrates how theoretical DSP concepts such as:
 
-The system is suitable for small-scale environments such as classrooms, laboratories, storage rooms, or basic monitoring applications.
+* Discrete Fourier Transform (DFT)
+* Fast Fourier Transform (FFT)
+* Frequency-domain analysis
+* Low-pass filtering
+* High-pass filtering
+* Image sampling and quantization
+* Image quality measurement
 
----
-
-## 2. System Architecture
-
-The system consists of four main blocks:
-
-1. **Sensor Block**
-   - Uses the DHT11 sensor to measure temperature and humidity.
-   - Communicates with the microcontroller through a single-wire data line.
-
-2. **Controller Block**
-   - Uses STM32F103C8 as the main processing unit.
-   - Sends the start signal to DHT11.
-   - Receives and decodes the 40-bit data frame.
-   - Checks data validity using checksum.
-
-3. **Display Block**
-   - Uses an LCD 16x02 module.
-   - Displays temperature in degrees Celsius and humidity in percentage RH.
-
-4. **Power Block**
-   - Provides stable DC power for STM32, DHT11, and LCD.
-   - Uses common GND for all modules.
+can be applied to real image processing tasks.
 
 ---
 
-## 3. Hardware Components
+## 2. Main Objectives
 
-| Component | Function |
-|---|---|
-| STM32F103C8T6 | Main microcontroller for sensor reading and data processing |
-| DHT11 | Digital sensor for temperature and humidity measurement |
-| LCD 16x02 | Displays temperature and humidity values |
-| Pull-up Resistor 4.7 kΩ – 10 kΩ | Stabilizes the DHT11 single-wire DATA line |
-| Crystal Oscillator | Provides stable clock for STM32 |
-| Breadboard / PCB Dot Board | Used for circuit testing and assembly |
-| ST-Link Programmer | Used to upload firmware to STM32 |
-| Power Supply | Provides stable 3.3 V / 5 V supply |
+The main objectives of this project are:
+
+* Understand the basic theory of **DFT** and **FFT**.
+* Analyze how frequency-domain processing can be applied to images.
+* Compare spatial-domain filtering and frequency-domain filtering.
+* Implement image filtering techniques using Python.
+* Evaluate processed images using quantitative metrics.
+* Demonstrate the relationship between **1D DSP** and **2D image processing**.
 
 ---
 
-## 4. DHT11 Communication Principle
+## 3. Theoretical Background
 
-The DHT11 sensor communicates with STM32 using a single-wire protocol.
+### 3.1 Discrete Fourier Transform
 
-The communication process includes:
+The **Discrete Fourier Transform (DFT)** is used to transform a discrete signal from the time or spatial domain into the frequency domain.
 
-1. STM32 pulls the DATA line low for at least 18 ms to start communication.
-2. STM32 releases the DATA line and waits for the DHT11 response.
-3. DHT11 responds with a low-level signal followed by a high-level signal.
-4. DHT11 sends a 40-bit data frame.
-5. STM32 measures pulse widths to determine whether each bit is `0` or `1`.
-6. STM32 verifies the received data using checksum.
+For image processing, a grayscale image can be considered as a 2D signal.
+The 2D DFT allows the image to be analyzed based on its spatial frequency components.
 
-The DHT11 data frame consists of:
-
-| Data Field | Size |
-|---|---|
-| Humidity Integer Part | 8 bits |
-| Humidity Decimal Part | 8 bits |
-| Temperature Integer Part | 8 bits |
-| Temperature Decimal Part | 8 bits |
-| Checksum | 8 bits |
+Low-frequency components usually represent smooth regions and general brightness information, while high-frequency components represent edges, details, and noise.
 
 ---
 
-## 5. Software Workflow
+### 3.2 Fast Fourier Transform
 
-The firmware is written in **C** for STM32.  
-The main workflow is:
+The **Fast Fourier Transform (FFT)** is an efficient algorithm used to compute the DFT with much lower computational complexity.
 
-1. Initialize system clock, GPIO, timer, and LCD.
-2. Send start signal to DHT11.
-3. Wait for sensor response.
-4. Read the 40-bit data frame.
-5. Decode temperature and humidity values.
-6. Verify checksum.
-7. Display valid data on LCD.
-8. Repeat the measurement every 1 second.
-
----
-
-## 6. Algorithm Flow
+Instead of calculating DFT directly with complexity:
 
 ```text
-Start
-  |
-  v
-Initialize STM32 peripherals
-  |
-  v
-Initialize LCD and DHT11 GPIO
-  |
-  v
-Main loop
-  |
-  v
-Wait 1 second
-  |
-  v
-Send start signal to DHT11
-  |
-  v
-Read 40-bit data frame
-  |
-  v
-Check checksum
-  |
-  +-- Invalid --> Display error / retry
-  |
-  +-- Valid --> Extract temperature and humidity
-  |
-  v
-Display values on LCD
-  |
-  v
-Repeat
+O(N^2)
+```
+
+FFT reduces the complexity to:
+
+```text
+O(N log N)
+```
+
+This makes FFT very useful for image filtering and frequency-domain processing, especially when working with large images.
+
+---
+
+### 3.3 Radix-2 and Radix-4 FFT
+
+This project also discusses FFT structures such as:
+
+* **Radix-2 FFT**
+* **Radix-4 FFT**
+* Butterfly computation structure
+* Divide-and-conquer approach
+* Bit-reversal ordering
+* Reduction of computational complexity
+
+These concepts help explain why FFT is much faster than direct DFT computation.
+
+---
+
+## 4. Image Processing Techniques
+
+The project applies several image processing techniques, including:
+
+### Low-Pass Filtering
+
+Low-pass filtering allows low-frequency components to pass and reduces high-frequency components.
+
+It is commonly used for:
+
+* Image smoothing
+* Noise reduction
+* Blurring
+* Removing fine details
+
+### High-Pass Filtering
+
+High-pass filtering allows high-frequency components to pass and suppresses low-frequency components.
+
+It is commonly used for:
+
+* Edge detection
+* Image sharpening
+* Detail enhancement
+* Highlighting rapid intensity changes
+
+### FFT-Based Filtering
+
+FFT-based filtering transforms an image into the frequency domain, applies a filter mask, and then reconstructs the image using inverse FFT.
+
+General workflow:
+
+```text
+Input Image
+   |
+   v
+Convert to Grayscale
+   |
+   v
+Apply FFT
+   |
+   v
+Shift Frequency Spectrum
+   |
+   v
+Apply Frequency-Domain Filter
+   |
+   v
+Apply Inverse FFT
+   |
+   v
+Reconstructed Image
 ```
 
 ---
 
-## 7. Display Format
+## 5. Technologies Used
 
-The measured data is displayed on the LCD as:
-
-```text
-TEMP: XX °C
-RH:   YY %
-```
-
-Example:
-
-```text
-TEMP: 30.0 C
-RH:   58.0 %
-```
+* Python
+* OpenCV
+* NumPy
+* Matplotlib
+* Digital Signal Processing
+* DFT / FFT
+* Image Filtering
+* PSNR
+* SSIM
 
 ---
 
-## 8. Simulation and Hardware Testing
+## 6. Project Workflow
 
-The system was designed and tested using both simulation and practical measurement.
+The image processing workflow includes:
 
-### Simulation
-
-- The circuit was simulated in **Proteus 8**.
-- STM32 was connected to DHT11 and LCD 16x02.
-- The LCD successfully displayed temperature and humidity values.
-
-### Hardware Testing
-
-The system was tested in three different environments:
-
-1. **Closed room**
-2. **Air-conditioned room**
-3. **Outdoor environment**
-
-The measured values from STM32 were compared with reference thermometer and humidity readings.
+1. Load input images.
+2. Convert images to grayscale if necessary.
+3. Apply spatial-domain filtering.
+4. Apply FFT-based frequency-domain filtering.
+5. Reconstruct filtered images.
+6. Compare original and processed images.
+7. Evaluate results using PSNR and SSIM.
+8. Analyze the effect of different filtering methods.
 
 ---
 
-## 9. Experimental Results
+## 7. Evaluation Metrics
 
-The project recorded temperature and humidity values in different environments.
+### PSNR
 
-### Closed Room
+**PSNR (Peak Signal-to-Noise Ratio)** is used to measure the difference between the original image and the processed image.
 
-- Average reference temperature: about 28.95 °C
-- Average STM32 temperature: about 30.00 °C
-- Temperature error: about 1.05 °C
-- Average humidity error: about 0.87%
+A higher PSNR value usually indicates better image reconstruction quality.
 
-### Air-Conditioned Room
+### SSIM
 
-- Average reference temperature: about 26.60 °C
-- Average STM32 temperature: about 26.50 °C
-- Temperature error: about 0.10 °C
-- Humidity error: about 5.5%RH
+**SSIM (Structural Similarity Index Measure)** evaluates the structural similarity between the original image and the processed image.
 
-### Outdoor Environment
+SSIM values are usually between 0 and 1.
 
-- The system continued to operate normally.
-- Temperature and humidity values remained within the expected DHT11 operating range.
-
-Overall, the system operated stably and produced acceptable results for a basic low-cost temperature and humidity monitoring module.
+* SSIM close to 1 means the processed image is very similar to the original image.
+* Lower SSIM means more structural distortion.
 
 ---
 
-## 10. Tools and Technologies Used
+## 8. Experimental Results
 
-- STM32F103C8T6
-- DHT11 Sensor
-- LCD 16x02
-- C Programming Language
-- STM32CubeIDE
-- Proteus 8
-- KiCad
-- ST-Link Programmer
-- Embedded GPIO Control
-- Timer-based Delay
-- Single-Wire Sensor Communication
+The project tested multiple images using different filtering techniques.
+
+The main comparison includes:
+
+* Original image
+* Low-pass filtered image
+* High-pass filtered image
+* FFT low-pass filtered image
+* FFT high-pass filtered image
+
+For each processed image, quality was evaluated using:
+
+* PSNR
+* SSIM
+* Visual comparison
+
+Example result for one test image:
+
+| Filtering Method |     PSNR |   SSIM |
+| ---------------- | -------: | -----: |
+| Low-pass Filter  | 26.80 dB | 0.8460 |
+| High-pass Filter | 18.45 dB | 0.5754 |
+
+From the results, low-pass filtering generally preserves the main visual structure better, while high-pass filtering emphasizes edges and details but may reduce overall image similarity.
 
 ---
 
-## 11. Project Features
+## 9. Discussion
 
-- Measures temperature from 0 °C to 50 °C.
-- Measures relative humidity from 20%RH to 80%RH.
-- Displays temperature and humidity on LCD.
-- Uses STM32F103C8 for embedded processing.
-- Communicates with DHT11 through a single-wire data line.
-- Applies checksum verification to detect invalid data.
-- Updates measured values periodically.
-- Can be expanded for logging, alerting, or IoT monitoring.
+The project shows that DSP principles can be effectively extended from 1D signals to 2D images.
+
+Important observations:
+
+* Low-pass filters smooth images and reduce high-frequency noise.
+* High-pass filters enhance edges and image details.
+* FFT allows filtering to be performed efficiently in the frequency domain.
+* PSNR and SSIM provide useful quantitative evaluation of image quality.
+* The choice of filter parameters strongly affects the final image quality.
+* Sampling density, quantization bits, window length, and filter design all influence the processing results.
 
 ---
 
-## 12. Repository Structure
+## 10. Repository Structure
 
 ```text
 .
-├── firmware/
-│   └── STM32 source code
-├── simulation/
-│   └── Proteus simulation files
-├── hardware/
-│   └── Schematic / PCB files
+├── src/
+│   └── image_processing_code.py
+├── images/
+│   └── input_test_images
+├── results/
+│   └── filtered_images_and_outputs
 ├── documents/
-│   └── Project report and references
+│   └── project_report.pdf
 └── README.md
 ```
 
-You may adjust the folder names depending on the actual structure of the repository.
+You can adjust the folder names depending on the actual structure of the repository.
 
 ---
 
-## 13. Future Development
+## 11. Key Features
 
-Possible improvements include:
-
-- Replace DHT11 with DHT22 or SHT3x for higher accuracy.
-- Add buzzer or LED warning when temperature or humidity exceeds a threshold.
-- Add data logging to memory card or EEPROM.
-- Add wireless communication such as WiFi, Bluetooth, or LoRa.
-- Build a Web or mobile dashboard for remote monitoring.
-- Design a compact PCB for real deployment.
-- Add calibration to improve measurement accuracy.
+* Demonstrates DFT and FFT theory through image processing.
+* Applies low-pass and high-pass filtering.
+* Implements FFT-based image filtering.
+* Uses OpenCV and NumPy for image manipulation.
+* Evaluates image quality using PSNR and SSIM.
+* Compares spatial-domain and frequency-domain processing.
+* Shows the relationship between 1D DSP and 2D image processing.
 
 ---
 
-## 14. Author
+## 12. Future Development
 
-**Pham Thao Nguyen**  
-Electronics and Telecommunications Engineering  
+Possible future improvements include:
+
+* Add more image datasets for testing.
+* Implement additional filters such as Gaussian, Butterworth, and Ideal filters.
+* Add a graphical user interface for selecting images and filter parameters.
+* Compare processing time between spatial-domain convolution and FFT-based filtering.
+* Extend the project to color image processing.
+* Apply the techniques to real-time video processing.
+* Add noise models and denoising algorithms.
+* Improve visualization of frequency spectra.
+
+---
+
+## 13. Author
+
+**Pham Thao Nguyen**
+Electronics and Telecommunications Engineering
 Ho Chi Minh City University of Technology – VNU-HCM
